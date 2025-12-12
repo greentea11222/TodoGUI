@@ -4,6 +4,7 @@ import { useEffect, useState} from "react";
 function App(){
 	//Reactの状態変数
 	const [todos, setTodos] = useState([]);
+	const [title, setTitle] = useState("");
 
 	//useEffect：画面が初めて表示された時に一度だけ実行される処理
 	useEffect(() => {
@@ -20,10 +21,39 @@ function App(){
 			.catch((err) => console.error("API取得失敗:", err));
 	}, []);
 	
-	//画面表示
+	//Todoの追加
+	const addTodo = () => {
+		const newTodo = {
+			title: title,
+			done: false,
+			priority: 1
+		};
+	
+	//POSTメソッド
+	fetch("http://localhost:8080/api/todos",{
+		method: "POST",
+		headers: {"Content-Type": "application/json"},
+		body: JSON.stringify(newTodo)
+	})
+		.then((res) => res.json())
+		.then((created) => {
+			setTodos([...todos, created]);
+			setTitle("");
+		});
+	};
+	
+	//画面表示。todosの配列の中身を1つずつ<li>に変換
 	return (
 		<div style={{ padding: "20px"}}>
 			<h1>Todoリスト</h1>
+			
+			<input
+				value={title}
+				onChanger={(e) => setTitle(e.target.value)}
+				placeholder="タイトル"
+			/>
+			<button onClick={addTodo}>追加</button>
+			
 			<ul>
 				{todos.map((todo) => (
 					<li key={todo.id}>
@@ -34,5 +64,5 @@ function App(){
 		</div>
 	);
 }
-
+//Appコンポーネントを外部から利用できるようにする
 export default App;
