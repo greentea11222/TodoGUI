@@ -34,6 +34,14 @@ public class TodoRepository {
 		return todo;
 	}
 	
+	//指定したidのTodoのdoneを変更する
+	public Todo updateDone(int id, boolean done) {
+		if(store.get(id) != null) {
+			store.get(id).setDone(done);
+		}
+		return store.get(id);
+	}
+	
 	//idを指定して、存在すれば削除してtrue、なければfalseを返す
 	public boolean delete(int id) {
 		//remove(Object key)の返り値は、入っていた値（指定されたkeyがない場合はnull）

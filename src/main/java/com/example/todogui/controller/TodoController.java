@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,8 +17,8 @@ import com.example.todogui.repository.TodoRepository;
 
 //WebAPIを返すコントローラであることを伝える。メソッドの戻り値をJSONにしたりする。
 @RestController
-//別ポートからのアクセスを受け入れる。React（5173番）→Spring Boot（8080番）の通信を許可
-@CrossOrigin(origins = "http://localhost:5173")
+//別ポートからのアクセスを受け入れる。React（3000番）→Spring Boot（8080番）の通信を許可
+@CrossOrigin(origins = "http://localhost:3000")
 //このクラスのAPIは/apiから始める。
 //GET：/api/todos　POST：/api/todos　DELETE：/api/todos/{id}
 @RequestMapping("/api")
@@ -42,6 +43,13 @@ public class TodoController {
 		return repository.save(title);
 	}
 	
+	//Todoの完了済・未完了を更新する
+	@PutMapping("/todos/{id}")
+	public Todo updateDone(@PathVariable int id, @RequestBody boolean done) {
+		return repository.updateDone(id, done);
+	}
+	
+	//Todoを削除する
 	@DeleteMapping("/todos/{id}")
 	//@PathVariable：URLの{id}の部分を変数として受け取る
 	public boolean deleteTodo(@PathVariable int id) {

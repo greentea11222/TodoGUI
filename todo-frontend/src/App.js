@@ -1,12 +1,15 @@
 //Hooks（画面の状態を管理するReactの仕組み）をインポート
+//useEffect：画面が初めて表示された時に一度だけ実行される処理
+//useState：データ保存のための道具
 import { useEffect, useState} from "react";
 
 function App(){
-	//Reactの状態変数
+	//todosというデータを、初期値は空の配列[]として作成。
+	//setTodosはtodosを更新するための関数
 	const [todos, setTodos] = useState([]);
 	const [title, setTitle] = useState("");
 
-	//useEffect：画面が初めて表示された時に一度だけ実行される処理
+	//初回のみ実行
 	useEffect(() => {
 		//fetch：バックエンド（Spring Boot）へのアクセス
 		//メソッドを指定しない場合はデフォルトでGETメソッド
@@ -28,18 +31,40 @@ function App(){
 			done: false,
 			priority: 1
 		};
-	
-	//POSTメソッド
-	fetch("http://localhost:8080/api/todos",{
-		method: "POST",
-		headers: {"Content-Type": "application/json"},
-		body: JSON.stringify(newTodo)
-	})
-		.then((res) => res.json())
-		.then((created) => {
-			setTodos([...todos, created]);
-			setTitle("");
-		});
+		//POSTメソッド
+		fetch("http://localhost:8080/api/todos",{
+			method: "POST",
+			//送るデータはJSONであることを宣言
+			headers: {"Content-Type": "application/json"},
+			//newTodoをJSONに変換
+			body: JSON.stringify(newTodo)
+		})
+			.then((res) => res.json())
+			.then((created) => {
+				//todosの末尾に新しいTodoを加えた配列を保存
+				setTodos([...todos, created]);
+				//最後に入力欄を空にする
+				setTitle("");
+			});
+	};
+		
+	//Todoのdoneを更新
+	const toggleDone = (id, done) => {
+		//${id}を使う場合は`(バッククォート、Shift + @）で囲む
+		fetch(`http://localhost:8080/api/todos/${id}`, {
+			method: "PUT",
+			headers: {"Content-Type": "application/json"},
+			body: JSON.stringify({done})
+		})
+			.then((res) => res.json())
+			.then((updated) => {
+				setTodos(
+					todos.map((todo) =>
+						todo.id === id ? updated : todo
+				)
+				);
+			})
+			.catch((err) => console.error("更新失敗", err));
 	};
 	
 	//画面表示。todosの配列の中身を1つずつ<li>に変換
@@ -49,7 +74,7 @@ function App(){
 			
 			<input
 				value={title}
-				onChanger={(e) => setTitle(e.target.value)}
+				onChange={(e) => setTitle(e.target.value)}
 				placeholder="タイトル"
 			/>
 			<button onClick={addTodo}>追加</button>
@@ -57,6 +82,11 @@ function App(){
 			<ul>
 				{todos.map((todo) => (
 					<li key={todo.id}>
+						<input
+							type="checkbox"
+							checked={todo.done}
+							onChange={() => toggleDone(todo.id, !todo.done)}
+						/>
 						{todo.title}(優先度: {todo.priority} / 完了: {todo.done ? "済" : "未"})
 					</li>
 				))}
