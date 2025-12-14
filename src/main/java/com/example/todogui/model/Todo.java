@@ -22,11 +22,14 @@ public class Todo {
 	public Todo(int id, String title) {
 		this(id, title, false, 2);
 	}
+	public Todo() {
+		
+	}
 	
 	//getter
 	public int getId()  {return this.id;}
 	public String getTitle() {return this.title;}
-	public boolean getDone() {return this.done;}
+	public boolean isDone() {return this.done;}
 	public int getPriority() {return this.priority;}
 	
 	//setter
@@ -49,13 +52,4 @@ public class Todo {
 		return (this.done ? "[済]" : "[未]") + " " 
 			+ this.title + "（優先度：" + priorityName + "）";
 	}
-//	//compareTo()メソッドの実装
-//	//優先度順で並べ替え
-//	public int compareTo(Todo todo) {
-//		if (this.priority < todo.priority) {
-//			return -1;
-//		}if (this.priority > todo.priority) {
-//			return 1;
-//		}return 0;
-//	}
 }

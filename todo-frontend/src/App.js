@@ -8,7 +8,21 @@ function App(){
 	//setTodosはtodosを更新するための関数
 	const [todos, setTodos] = useState([]);
 	const [title, setTitle] = useState("");
-
+	
+	//優先度を日本語にする
+	const getPriorityName = (priority) => {
+		switch (priority){
+			case 1:
+				return "高";
+			case 2:
+				return "中";
+			case 3:
+				return "低";
+			default:
+				return "未設定";
+		}
+	}
+	
 	//初回のみ実行
 	useEffect(() => {
 		//fetch：バックエンド（Spring Boot）へのアクセス
@@ -29,7 +43,7 @@ function App(){
 		const newTodo = {
 			title: title,
 			done: false,
-			priority: 1
+			priority: 2
 		};
 		//POSTメソッド
 		fetch("http://localhost:8080/api/todos",{
@@ -42,7 +56,7 @@ function App(){
 			.then((res) => res.json())
 			.then((created) => {
 				//todosの末尾に新しいTodoを加えた配列を保存
-				setTodos([...todos, created]);
+				setTodos(prevTodos => [...prevTodos, created]);
 				//最後に入力欄を空にする
 				setTitle("");
 			});
@@ -50,11 +64,22 @@ function App(){
 		
 	//Todoのdoneを更新
 	const toggleDone = (id, done) => {
+		const targetTodo = todos.find(todo => todo.id === id);
+		
+		if(!targetTodo){
+			console.error("更新対象のTodoが見つかりません：", id);
+			return;
+		}
+		const updatedTodo = {
+			...targetTodo,
+			done: done
+		}
+		
 		//${id}を使う場合は`(バッククォート、Shift + @）で囲む
 		fetch(`http://localhost:8080/api/todos/${id}`, {
 			method: "PUT",
 			headers: {"Content-Type": "application/json"},
-			body: JSON.stringify({done})
+			body: JSON.stringify(updatedTodo)
 		})
 			.then((res) => res.json())
 			.then((updated) => {
@@ -79,15 +104,37 @@ function App(){
 			/>
 			<button onClick={addTodo}>追加</button>
 			
-			<ul>
+			<ul style={{ listStyle: "none", padding: 0}}>
 				{todos.map((todo) => (
-					<li key={todo.id}>
+					<li 
+						key={todo.id}
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: "10px",
+							padding: "8px 0",
+							borderBottom: "1px solid #ddd"
+						}}
+					>
 						<input
 							type="checkbox"
 							checked={todo.done}
 							onChange={() => toggleDone(todo.id, !todo.done)}
 						/>
-						{todo.title}(優先度: {todo.priority} / 完了: {todo.done ? "済" : "未"})
+						
+						<span
+							style={{
+								flex: 1,
+								textDecoration: todo.done ? "line-through" : "none",
+								color: todo.done ? "#aaa" : "#000",
+								opacity: todo.done ? 0.6 : 1
+							}}
+						>
+							{todo.title}
+						</span>
+						<span style={{fontSize: "12px", color: "#555"}}>
+							優先度: {getPriorityName(todo.priority)}
+						</span>
 					</li>
 				))}
 			</ul>

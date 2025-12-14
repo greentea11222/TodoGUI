@@ -26,10 +26,10 @@ public class TodoRepository {
 	}
 	
 	//新しいTodoインスタンスを生成
-	public Todo save(String title) {
+	public Todo save(Todo todo) {
 		//現在の値を返し、自動でインクリメントする
 		int id = idGenerator.getAndIncrement();
-		Todo todo = new Todo(id, title, false, 2);
+		todo.setId(id);
 		store.put(id, todo);
 		return todo;
 	}

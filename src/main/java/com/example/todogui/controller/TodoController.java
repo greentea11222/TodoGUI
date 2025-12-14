@@ -39,14 +39,14 @@ public class TodoController {
 	@PostMapping("/todos")
 	//@RequestBody：リクエストボディ（JSON）をJavaインスタンスに変換
 	//{"id":2, "title":"勉強","done":false,"priority":1}と送られてきたら、それを元にTodoインスタンスを作る
-	public Todo createTodo(@RequestBody String title) {
-		return repository.save(title);
+	public Todo createTodo(@RequestBody Todo todo) {
+		return repository.save(todo);
 	}
 	
 	//Todoの完了済・未完了を更新する
 	@PutMapping("/todos/{id}")
-	public Todo updateDone(@PathVariable int id, @RequestBody boolean done) {
-		return repository.updateDone(id, done);
+	public Todo updateDone(@PathVariable int id, @RequestBody Todo todo) {
+		return repository.updateDone(id, todo.isDone());
 	}
 	
 	//Todoを削除する
