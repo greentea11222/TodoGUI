@@ -7,6 +7,7 @@ function App(){
 	//todosというデータを、初期値は空の配列[]として作成。
 	//setTodosはtodosを更新するための関数
 	const [todos, setTodos] = useState([]);
+	//ユーザーが入力したタイトルを管理する。
 	const [title, setTitle] = useState("");
 	
 	//優先度を日本語にする
@@ -40,12 +41,13 @@ function App(){
 	
 	//Todoの追加
 	const addTodo = () => {
+		//新しいTodoオブジェクトを作成
 		const newTodo = {
 			title: title,
 			done: false,
 			priority: 2
 		};
-		//POSTメソッド
+		//POSTリクエストを送信
 		fetch("http://localhost:8080/api/todos",{
 			method: "POST",
 			//送るデータはJSONであることを宣言
@@ -63,13 +65,20 @@ function App(){
 	};
 		
 	//Todoのdoneを更新
+	//関数toggleDoneの定義。引数としてidとdoneを受け取る
 	const toggleDone = (id, done) => {
+		//更新したいTodoオブジェクトを準備
+		//find()は、配列の先頭から条件に当てはまる最初の要素を返す
+		//配列の中の要素todoを受け取り、そのidと引数idが同じならtrue
 		const targetTodo = todos.find(todo => todo.id === id);
 		
 		if(!targetTodo){
 			console.error("更新対象のTodoが見つかりません：", id);
 			return;
 		}
+		//変数updatedTodoの定義。
+		//targetTodoのフィールド(id~doneまで)を全てコピーし、
+		//doneだけ引数doneの値で上書きする
 		const updatedTodo = {
 			...targetTodo,
 			done: done
@@ -81,10 +90,16 @@ function App(){
 			headers: {"Content-Type": "application/json"},
 			body: JSON.stringify(updatedTodo)
 		})
+			//返ってきたレスポンスからJSON文字列を取り出し、JavaScriptで扱えるオブジェクトの形式に変換
 			.then((res) => res.json())
+			//上の行で変換したオブジェクトを引数updatedとして渡す
 			.then((updated) => {
 				setTodos(
+					//map()：配列の要素を全てループ処理するメソッド
 					todos.map((todo) =>
+						//配列内の要素todoについて、idが引数idと同じなら、
+						//その要素をupdated（レスポンスから返ってきたデータ）に置き換える。
+						//falseの場合はそのまま
 						todo.id === id ? updated : todo
 				)
 				);
@@ -118,7 +133,9 @@ function App(){
 					>
 						<input
 							type="checkbox"
+							//Todoのdoneがtrueの場合はチェック、falseの場合はチェックを外す
 							checked={todo.done}
+							//チェックボックスの状態を変えると、idとtodo.doneの逆を引数として関数を実行。
 							onChange={() => toggleDone(todo.id, !todo.done)}
 						/>
 						
