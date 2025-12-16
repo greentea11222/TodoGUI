@@ -112,14 +112,19 @@ function App(){
 		<div style={{ padding: "20px"}}>
 			<h1>Todoリスト</h1>
 			
+			{/* Todoのタイトルを入力するテキストボックス */}
 			<input
+				/* inputボックスの現在の値をtitleに紐付け */
 				value={title}
+				/* inputボックスの内容が変更されるたびに、新しい値を取得してtitleを更新 */
 				onChange={(e) => setTitle(e.target.value)}
 				placeholder="タイトル"
 			/>
+			{/* クリックするとaddTodoを呼び出す */}
 			<button onClick={addTodo}>追加</button>
 			
 			<ul style={{ listStyle: "none", padding: 0}}>
+				{/* todosの要素を一つずつ取り出し、要素の数だけliを生成 */}
 				{todos.map((todo) => (
 					<li 
 						key={todo.id}
@@ -142,8 +147,11 @@ function App(){
 						<span
 							style={{
 								flex: 1,
+								//done=trueの場合は打ち消し線を入れる
 								textDecoration: todo.done ? "line-through" : "none",
+								//done=trueの場合は文字色を薄い灰色にする
 								color: todo.done ? "#aaa" : "#000",
+								//done=trueの場合は文字を少し半透明にする
 								opacity: todo.done ? 0.6 : 1
 							}}
 						>
