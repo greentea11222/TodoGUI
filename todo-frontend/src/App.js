@@ -107,6 +107,21 @@ function App(){
 			.catch((err) => console.error("更新失敗", err));
 	};
 	
+	//Todoを削除
+	const deleteTodo = (id) => {
+		fetch(`http://localhost:8080/api/todos/${id}`, {
+			method: "DELETE",
+		})
+		.then((res) => {
+			if(res.ok){
+				setTodos(todos.fileter((todo) => todo.id !== id));
+			}else {
+				console.error("削除に失敗しました");
+			}
+		})
+		.catch((err) => console.error("通信エラー：", err));
+	};
+	
 	//画面表示。todosの配列の中身を1つずつ<li>に変換
 	return (
 		<div style={{ padding: "20px"}}>
