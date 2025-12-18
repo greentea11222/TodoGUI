@@ -129,64 +129,116 @@ function App(){
 	
 	//画面表示。todosの配列の中身を1つずつ<li>に変換
 	return (
-		<div style={{ padding: "20px"}}>
-			<h1>Todoリスト</h1>
+		<div style={{
+			backgroundColor: "#f4f7f6", //薄いグレーの背景
+			minHeight: "100vh", 
+			padding: "40px 20px",
+			fontFamily: "'Helvetica Neue', Arial, sans-serif"
+		}}>
+			<div style={{
+				maxWidth: "500px",
+				margin: "0 auto",
+				backgroundColor: "#fff",
+				padding: "30px",
+				borderRadius: "12px", //角を丸くする
+				boxShadow: "0 10px 25px rgba(0,0,0,0.1)" //ふわっとした影
+			}}>
 			
-			{/* Todoのタイトルを入力するテキストボックス */}
-			<input
-				/* inputボックスの現在の値をtitleに紐付け */
-				value={title}
-				/* inputボックスの内容が変更されるたびに、新しい値を取得してtitleを更新 */
-				onChange={(e) => setTitle(e.target.value)}
-				placeholder="タイトル"
-			/>
-			{/* クリックするとaddTodoを呼び出す */}
-			<button onClick={addTodo}>追加</button>
-			
-			<ul style={{ listStyle: "none", padding: 0}}>
-				{/* todosの要素を一つずつ取り出し、要素の数だけliを生成 */}
-				{todos.map((todo) => (
-					<li 
-						key={todo.id}
+				<h1 style={{textAlign: "center", color: "#333", marginBottom: "30px"}}>
+					MyTodoList
+				</h1>
+				
+				{/* Todoのタイトルを入力するテキストボックス */}
+				<div style={{display: "flex", gap: "10px", marginBottom: "30px"}}>
+					<input
+						/* inputボックスの現在の値をtitleに紐付け */
+						value={title}
+						/* inputボックスの内容が変更されるたびに、新しい値を取得してtitleを更新 */
+						onChange={(e) => setTitle(e.target.value)}
+						placeholder="何をしますか？"
 						style={{
-							display: "flex",
-							alignItems: "center",
-							gap: "10px",
-							padding: "8px 0",
-							borderBottom: "1px solid #ddd"
+							flex: 1, padding: "12px", borderRadius: "8px",
+							border: "1px solid #ddd", fontSize: "16px", outline: "none"
+						}}
+					/>
+					{/* クリックするとaddTodoを呼び出す */}
+					<button
+						onClick={addTodo}
+						style={{
+							padding: "12px 20px", backgroundColor: "#007bff", color: "#fff",
+							border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold"
 						}}
 					>
-						<input
-							type="checkbox"
-							//Todoのdoneがtrueの場合はチェック、falseの場合はチェックを外す
-							checked={todo.done}
-							//チェックボックスの状態を変えると、idとtodo.doneの逆を引数として関数を実行。
-							onChange={() => toggleDone(todo.id, !todo.done)}
-						/>
-						
-						<span
-							style={{
-								flex: 1,
-								//done=trueの場合は打ち消し線を入れる
-								textDecoration: todo.done ? "line-through" : "none",
-								//done=trueの場合は文字色を薄い灰色にする
-								color: todo.done ? "#aaa" : "#000",
-								//done=trueの場合は文字を少し半透明にする
-								opacity: todo.done ? 0.6 : 1
-							}}
-						>
-							{todo.title}
-						</span>
-						<span style={{fontSize: "12px", color: "#555"}}>
-							優先度: {getPriorityName(todo.priority)}
-						</span>
-						{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
-						<button onClick={() => deleteTodo(todo.id)}>削除</button>
-					</li>
-				))}
-			</ul>
-		</div>
-	);
+						追加
+					</button>
+				</div>
+					<ul style={{ listStyle: "none", padding: 0}}>
+						{/* todosの要素を一つずつ取り出し、要素の数だけliを生成 */}
+						{todos.map((todo) => (
+							<li 
+								key={todo.id}
+								style={{
+									display: "flex", alignItems: "center", gap: "15px",
+									padding: "15px 0",borderBottom: "1px solid #eee"
+								}}
+							>
+								<input
+									type="checkbox"
+									//Todoのdoneがtrueの場合はチェック、falseの場合はチェックを外す
+									checked={todo.done}
+									//チェックボックスの状態を変えると、idとtodo.doneの逆を引数として関数を実行。
+									onChange={() => toggleDone(todo.id, !todo.done)}
+									style={{ width: "20px", height: "20px", cursor: "pointer" }}
+								/>
+								
+								<div style={{ flex: 1 }}>
+									<div style={{
+										//done=trueの場合は打ち消し線を入れる
+										textDecoration: todo.done ? "line-through" : "none",
+										//done=trueの場合は文字色を薄い灰色にする
+										color: todo.done ? "#aaa" : "#333",
+										fontSize: "16px", fontWeight: "500"
+//										//done=trueの場合は文字を少し半透明にする
+//										opacity: todo.done ? 0.6 : 1	
+									}}>
+									{todo.title}
+									</div>
+									<span style={{
+										fontSize: "12px", fontWeight: "bold",
+										color: todo.priority == 1 ? "#e74c3c" : //高 ＝ 赤
+												todo.priority == 2 ? "#f39c12": //中 = オレンジ
+												"#27ae60",						//低 = 緑
+										backgroundColor: todo.priority == 1 ? "#fdecea" :
+														todo.priority == 2 ? "#fef5e7" : "#eafaf1",
+										padding: "2px 8px", borderRadius: "4px"
+									}}>
+										優先度: {getPriorityName(todo.priority)}
+									</span>
+								</div>
+								
+								{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
+								<button
+									onClick={() => deleteTodo(todo.id)}
+									style={{
+										backgroundColor: "transparent", border: "1px solid #ff4d4f",
+										color: "#ff4d4f", padding: "5px 10px", borderRadius: "6px",
+										cursor: "pointer", fontSize: "12px"
+									}}
+								>
+									削除
+								</button>
+							</li>
+						))}
+					</ul>
+					
+					{/* 進捗表示 */}
+					<div style={{ marginTop: "20px", textAlign: "right", fontSize: "14px", color: "#888"}}>
+						{/* 配列todosの各要素（t)から、done=falseの要素だけを抽出し、要素数を数える */}
+						残り：{todos.filter(t => !t.done).length} 件
+					</div>
+				</div>
+			</div>
+		);
 }
 //Appコンポーネントを外部から利用できるようにする
 export default App;
