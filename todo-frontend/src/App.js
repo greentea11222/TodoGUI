@@ -109,17 +109,22 @@ function App(){
 	
 	//Todoを削除
 	const deleteTodo = (id) => {
-		fetch(`http://localhost:8080/api/todos/${id}`, {
-			method: "DELETE",
-		})
-		.then((res) => {
-			if(res.ok){
-				setTodos(todos.fileter((todo) => todo.id !== id));
-			}else {
-				console.error("削除に失敗しました");
-			}
-		})
-		.catch((err) => console.error("通信エラー：", err));
+		//確認ダイアログの表示
+		if (window.confirm("このTodoを削除してよろしいですか？")){
+			fetch(`http://localhost:8080/api/todos/${id}`, {
+				method: "DELETE",
+			})
+			.then((res) => {
+				if(res.ok){
+					//todos配列から、idが指定idと合致しないものだけを残す
+					//一致するものは配列から消す
+					setTodos(todos.filter((todo) => todo.id !== id));
+				}else {
+					console.error("削除に失敗しました");
+				}
+			})
+			.catch((err) => console.error("通信エラー：", err));
+		}
 	};
 	
 	//画面表示。todosの配列の中身を1つずつ<li>に変換
@@ -175,6 +180,8 @@ function App(){
 						<span style={{fontSize: "12px", color: "#555"}}>
 							優先度: {getPriorityName(todo.priority)}
 						</span>
+						{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
+						<button onClick={() => deleteTodo(todo.id)}>削除</button>
 					</li>
 				))}
 			</ul>
