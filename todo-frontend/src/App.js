@@ -127,6 +127,25 @@ function App(){
 		}
 	};
 	
+	//優先度を更新
+	const updatePriority = (id, newPriority) => {
+		const targetTodo = todos.find(todo => todo.id === id);
+		if (!targetTodo) return;
+		
+		const updatedTodo = {...targetTodo, priority: parseInt(newPriority)};
+		
+		fetch(`http://localhost:8080/api/todos/${id}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json"},
+			body: JSON.stringify(updatedTodo)
+		})
+		.then(res => res.json())
+		.then(updated => {
+			setTodos(todos.map(todo => todo.id === id ? updated : todo));
+		})
+		.catch(err => console.err("優先度更新失敗", err));
+	}
+	
 	//画面表示。todosの配列の中身を1つずつ<li>に変換
 	return (
 		<div style={{
