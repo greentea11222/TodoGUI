@@ -57,7 +57,7 @@ function App(){
 		})
 			.then((res) => res.json())
 			.then((created) => {
-				//todosの末尾に新しいTodoを加えた配列を保存
+				//現在のtodosをprevTodosとし、その末尾に新しいTodoを加えた配列を保存
 				setTodos(prevTodos => [...prevTodos, created]);
 				//最後に入力欄を空にする
 				setTitle("");
@@ -67,22 +67,16 @@ function App(){
 	//Todoのdoneを更新
 	//関数toggleDoneの定義。引数としてidとdoneを受け取る
 	const toggleDone = (id, done) => {
-		//更新したいTodoオブジェクトを準備
 		//find()は、配列の先頭から条件に当てはまる最初の要素を返す
-		//配列の中の要素todoを受け取り、そのidと引数idが同じならtrue
+		//配列の中の要素todoを受け取り、そのidと引数idが同じならtargetTodoにそのtodoを入れる
 		const targetTodo = todos.find(todo => todo.id === id);
-		
+		//見つからなければエラーを吐いて終了
 		if(!targetTodo){
 			console.error("更新対象のTodoが見つかりません：", id);
 			return;
 		}
-		//変数updatedTodoの定義。
-		//targetTodoのフィールド(id~doneまで)を全てコピーし、
-		//doneだけ引数doneの値で上書きする
-		const updatedTodo = {
-			...targetTodo,
-			done: done
-		}
+		//targetTodoをコピーし、doneだけ引数doneの値で上書きする
+		const updatedTodo = {...targetTodo,done: done};
 		
 		//${id}を使う場合は`(バッククォート、Shift + @）で囲む
 		fetch(`http://localhost:8080/api/todos/${id}`, {
@@ -101,7 +95,7 @@ function App(){
 						//その要素をupdated（レスポンスから返ってきたデータ）に置き換える。
 						//falseの場合はそのまま
 						todo.id === id ? updated : todo
-				)
+					)
 				);
 			})
 			.catch((err) => console.error("更新失敗", err));
@@ -129,9 +123,16 @@ function App(){
 	
 	//優先度を更新
 	const updatePriority = (id, newPriority) => {
+		
+		//プルダウンを即座に更新
+		setTodos(todos.map(todo => todo.id === id ? {...todo, priority: parseInt(newPriority)} : todo));
+		//todos配列から、指定idに合致するtodoがあるか探す
+		//見つかった場合はその要素、見つからなかった場合はundefinedが入る
 		const targetTodo = todos.find(todo => todo.id === id);
 		if (!targetTodo) return;
 		
+		//サーバーに送るためのデータを作成。targetTodoのpriorityだけ上書き
+		//スプレッド構文：元のデータ（targetTodo）を丸ごとコピーし、一部分（priority）だけ書き換える
 		const updatedTodo = {...targetTodo, priority: parseInt(newPriority)};
 		
 		fetch(`http://localhost:8080/api/todos/${id}`, {
@@ -139,11 +140,14 @@ function App(){
 			headers: { "Content-Type": "application/json"},
 			body: JSON.stringify(updatedTodo)
 		})
-		.then(res => res.json())
-		.then(updated => {
-			setTodos(todos.map(todo => todo.id === id ? updated : todo));
+		.then((res) => res.json())
+		//上の行で変換したデータをupdatedとして受け取る
+		.then((updated) => {
+			//最新のtodosをcurrentTodosとし、その中の要素が指定idと一致したらupdatedに置き換える。
+			setTodos(currentTodos =>
+				currentTodos.map(todo => todo.id === id ? updated : todo));
 		})
-		.catch(err => console.err("優先度更新失敗", err));
+		.catch(err => console.error("優先度更新失敗", err));
 	}
 	
 	//画面表示。todosの配列の中身を1つずつ<li>に変換
@@ -222,17 +226,25 @@ function App(){
 									}}>
 									{todo.title}
 									</div>
-									<span style={{
-										fontSize: "12px", fontWeight: "bold",
+									<span style={{fontSize:"12px"}}>優先度：</span>
+									<select
+										value={todo.priority}
+										onChange={(e) => updatePriority(todo.id, e.target.value)} 
+										style={{
+										fontSize: "12px", padding: "2px 4px", borderRadius: "4px",
+										border: "1px solid #ddd",
 										color: todo.priority == 1 ? "#e74c3c" : //高 ＝ 赤
 												todo.priority == 2 ? "#f39c12": //中 = オレンジ
 												"#27ae60",						//低 = 緑
 										backgroundColor: todo.priority == 1 ? "#fdecea" :
-														todo.priority == 2 ? "#fef5e7" : "#eafaf1",
-										padding: "2px 8px", borderRadius: "4px"
+														todo.priority == 2 ? "#fef5e7" :
+														"#eafaf1",
+										fontWeight: "bold", cursor: "pointer"
 									}}>
-										優先度: {getPriorityName(todo.priority)}
-									</span>
+										<option value ="1">高</option>
+										<option value ="2">中</option>
+										<option value ="3">低</option>
+									</select>
 								</div>
 								
 								{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
