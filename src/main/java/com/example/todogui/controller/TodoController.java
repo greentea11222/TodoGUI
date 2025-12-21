@@ -43,10 +43,10 @@ public class TodoController {
 		return repository.save(todo);
 	}
 	
-	//Todoの完了済・未完了を更新する
+	//Todoのフィールドを更新する
 	@PutMapping("/todos/{id}")
-	public Todo updateDone(@PathVariable int id, @RequestBody Todo todo) {
-		return repository.updateDone(id, todo.isDone());
+	public Todo updateTodo(@PathVariable int id, @RequestBody Todo todo) {
+		return repository.updateTodo(id, todo);
 	}
 	
 	//Todoを削除する

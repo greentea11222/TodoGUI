@@ -35,9 +35,11 @@ public class TodoRepository {
 	}
 	
 	//指定したidのTodoのdoneを変更する
-	public Todo updateDone(int id, boolean done) {
+	public Todo updateTodo(int id, Todo newTodo) {
 		if(store.get(id) != null) {
-			store.get(id).setDone(done);
+			store.get(id).setTitle(newTodo.getTitle());
+			store.get(id).setDone(newTodo.isDone());
+			store.get(id).setPriority(newTodo.getPriority());
 		}
 		return store.get(id);
 	}
