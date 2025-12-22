@@ -197,68 +197,84 @@ function App(){
 				</div>
 					<ul style={{ listStyle: "none", padding: 0}}>
 						{/* todosの要素を一つずつ取り出し、要素の数だけliを生成 */}
-						{todos.map((todo) => (
-							<li 
-								key={todo.id}
-								style={{
-									display: "flex", alignItems: "center", gap: "15px",
-									padding: "15px 0",borderBottom: "1px solid #eee"
-								}}
-							>
-								<input
-									type="checkbox"
-									//Todoのdoneがtrueの場合はチェック、falseの場合はチェックを外す
-									checked={todo.done}
-									//チェックボックスの状態を変えると、idとtodo.doneの逆を引数として関数を実行。
-									onChange={() => toggleDone(todo.id, !todo.done)}
-									style={{ width: "20px", height: "20px", cursor: "pointer" }}
-								/>
-								
-								<div style={{ flex: 1 }}>
-									<div style={{
-										//done=trueの場合は打ち消し線を入れる
-										textDecoration: todo.done ? "line-through" : "none",
-										//done=trueの場合は文字色を薄い灰色にする
-										color: todo.done ? "#aaa" : "#333",
-										fontSize: "16px", fontWeight: "500"
-//										//done=trueの場合は文字を少し半透明にする
-//										opacity: todo.done ? 0.6 : 1	
-									}}>
-									{todo.title}
-									</div>
-									<span style={{fontSize:"12px"}}>優先度：</span>
-									<select
-										value={todo.priority}
-										onChange={(e) => updatePriority(todo.id, e.target.value)} 
-										style={{
-										fontSize: "12px", padding: "2px 4px", borderRadius: "4px",
-										border: "1px solid #ddd",
-										color: todo.priority == 1 ? "#e74c3c" : //高 ＝ 赤
-												todo.priority == 2 ? "#f39c12": //中 = オレンジ
-												"#27ae60",						//低 = 緑
-										backgroundColor: todo.priority == 1 ? "#fdecea" :
-														todo.priority == 2 ? "#fef5e7" :
-														"#eafaf1",
-										fontWeight: "bold", cursor: "pointer"
-									}}>
-										<option value ="1">高</option>
-										<option value ="2">中</option>
-										<option value ="3">低</option>
-									</select>
-								</div>
-								
-								{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
-								<button
-									onClick={() => deleteTodo(todo.id)}
+						{todos
+							.slice() //sortは元の配列を並べ替えてしまうので、コピーを作成
+							//優先度が高い順（数字が小さい順）かつ未完了（done=false）が先に来るように並べ替え
+							.sort((a, b) => {
+								//aとbでdoneが違う場合
+								if (a.done !== b.done){
+									//aがtrue（bがfalse）の場合は1を返し、bが先に来る
+									//aがfalse（bがtrue）の場合は-1を返し、aが先に来る
+									//つまり、done=false（未完了）の方が先に来る！
+									return a.done ? 1 : -1;
+								}
+								//aとbのdoneが同じ場合は優先度の数字順にする
+								//引き算の結果がマイナス（aの方が数字が小さい）ならaが先に、
+								//結果がプラス（bの方が数字が小さい）ならbが先に来る
+								return a.priority - b.priority;
+							})
+							.map((todo) => (
+								<li 
+									key={todo.id}
 									style={{
-										backgroundColor: "transparent", border: "1px solid #ff4d4f",
-										color: "#ff4d4f", padding: "5px 10px", borderRadius: "6px",
-										cursor: "pointer", fontSize: "12px"
+										display: "flex", alignItems: "center", gap: "15px",
+										padding: "15px 0",borderBottom: "1px solid #eee"
 									}}
 								>
-									削除
-								</button>
-							</li>
+									<input
+										type="checkbox"
+										//Todoのdoneがtrueの場合はチェック、falseの場合はチェックを外す
+										checked={todo.done}
+										//チェックボックスの状態を変えると、idとtodo.doneの逆を引数として関数を実行。
+										onChange={() => toggleDone(todo.id, !todo.done)}
+										style={{ width: "20px", height: "20px", cursor: "pointer" }}
+									/>
+									
+									<div style={{ flex: 1 }}>
+										<div style={{
+											//done=trueの場合は打ち消し線を入れる
+											textDecoration: todo.done ? "line-through" : "none",
+											//done=trueの場合は文字色を薄い灰色にする
+											color: todo.done ? "#aaa" : "#333",
+											fontSize: "16px", fontWeight: "500"
+	//										//done=trueの場合は文字を少し半透明にする
+	//										opacity: todo.done ? 0.6 : 1	
+										}}>
+										{todo.title}
+										</div>
+										<span style={{fontSize:"12px"}}>優先度：</span>
+										<select
+											value={todo.priority}
+											onChange={(e) => updatePriority(todo.id, e.target.value)} 
+											style={{
+											fontSize: "12px", padding: "2px 4px", borderRadius: "4px",
+											border: "1px solid #ddd",
+											color: todo.priority == 1 ? "#e74c3c" : //高 ＝ 赤
+													todo.priority == 2 ? "#f39c12": //中 = オレンジ
+													"#27ae60",						//低 = 緑
+											backgroundColor: todo.priority == 1 ? "#fdecea" :
+															todo.priority == 2 ? "#fef5e7" :
+															"#eafaf1",
+											fontWeight: "bold", cursor: "pointer"
+										}}>
+											<option value ="1">高</option>
+											<option value ="2">中</option>
+											<option value ="3">低</option>
+										</select>
+									</div>
+									
+									{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
+									<button
+										onClick={() => deleteTodo(todo.id)}
+										style={{
+											backgroundColor: "transparent", border: "1px solid #ff4d4f",
+											color: "#ff4d4f", padding: "5px 10px", borderRadius: "6px",
+											cursor: "pointer", fontSize: "12px"
+										}}
+									>
+										削除
+									</button>
+								</li>
 						))}
 					</ul>
 					
