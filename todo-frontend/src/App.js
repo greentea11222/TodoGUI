@@ -7,8 +7,10 @@ function App(){
 	//todosというデータを、初期値は空の配列[]として作成。
 	//setTodosはtodosを更新するための関数
 	const [todos, setTodos] = useState([]);
-	//ユーザーが入力したタイトルを管理する。
+	//ユーザーが入力したタイトルを管理する
 	const [title, setTitle] = useState("");
+	//締切の日付を管理する
+	const [deadline, setDeadline] = useState("");
 	
 	//優先度を日本語にする
 	const getPriorityName = (priority) => {
@@ -261,6 +263,12 @@ function App(){
 											<option value ="2">中</option>
 											<option value ="3">低</option>
 										</select>
+										{/* 締切日を追加 */}
+										<input 
+											type="date"
+											value={deadline}
+											onChange={(e) => setDeadline(e.target.value)}
+										/>
 									</div>
 									
 									{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}

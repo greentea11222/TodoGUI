@@ -40,6 +40,7 @@ public class TodoRepository {
 			store.get(id).setTitle(newTodo.getTitle());
 			store.get(id).setDone(newTodo.isDone());
 			store.get(id).setPriority(newTodo.getPriority());
+			store.get(id).setDeadline(newTodo.getDeadline());
 		}
 		return store.get(id);
 	}

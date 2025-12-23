@@ -1,5 +1,7 @@
 package com.example.todogui.model;
 
+import java.time.LocalDate;
+
 //idを追加したので並べ替えのメソッドはコメントアウト。
 //実装する場合はimplements　Comparable<Todo>をつける
 public class Todo {
@@ -7,6 +9,7 @@ public class Todo {
 	private String title; //ToDoのタイトル
 	private boolean done; //完了済みかどうか
 	private int priority; //優先度（1=高、2=中、3=低）
+	private LocalDate deadline; //締切日。2025-12-12のような形式
 	
 	//コンストラクタ
 	public Todo(int id, String title, boolean done, int priority) {
@@ -31,12 +34,14 @@ public class Todo {
 	public String getTitle() {return this.title;}
 	public boolean isDone() {return this.done;}
 	public int getPriority() {return this.priority;}
+	public LocalDate getDeadline() {return this.deadline;}
 	
 	//setter
 	public void setId(int id) {this.id = id;}
 	public void setTitle(String title) {this.title = title;}
 	public void setDone(boolean done) {this.done = done;}
 	public void setPriority(int priority) {this.priority = priority;}
+	public void setDeadline(LocalDate deadline) {this.deadline = deadline;}
 	
 	@Override
 	//toStringメソッド。println()の中にTodoクラスの変数を入れるだけで情報を表示してくれる
