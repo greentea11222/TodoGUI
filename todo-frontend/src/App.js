@@ -47,7 +47,8 @@ function App(){
 		const newTodo = {
 			title: title,
 			done: false,
-			priority: 2
+			priority: 2,
+			deadline: deadline
 		};
 		//POSTリクエストを送信
 		fetch("http://localhost:8080/api/todos",{
@@ -61,8 +62,9 @@ function App(){
 			.then((created) => {
 				//現在のtodosをprevTodosとし、その末尾に新しいTodoを加えた配列を保存
 				setTodos(prevTodos => [...prevTodos, created]);
-				//最後に入力欄を空にする
+				//最後に入力欄と日付選択欄を空にする
 				setTitle("");
+				setDeadline("");
 			});
 	};
 		
@@ -186,6 +188,12 @@ function App(){
 							border: "1px solid #ddd", fontSize: "16px", outline: "none"
 						}}
 					/>
+					{/* 締切日を追加 */}
+					<input 
+						type="date"
+						value={deadline}
+						onChange={(e) => setDeadline(e.target.value)}
+					/>
 					{/* クリックするとaddTodoを呼び出す */}
 					<button
 						onClick={addTodo}
@@ -244,6 +252,10 @@ function App(){
 										}}>
 										{todo.title}
 										</div>
+										{/* 締切日 */}
+										<span style = {{ fontSize: "0.8em", color: "#666", marginRight: "10px" }}>
+											{todo.deadline ? `(締切： ${todo.deadline}`: "（締切なし）"}
+										</span>
 										<span style={{fontSize:"12px"}}>優先度：</span>
 										<select
 											value={todo.priority}
@@ -263,12 +275,6 @@ function App(){
 											<option value ="2">中</option>
 											<option value ="3">低</option>
 										</select>
-										{/* 締切日を追加 */}
-										<input 
-											type="date"
-											value={deadline}
-											onChange={(e) => setDeadline(e.target.value)}
-										/>
 									</div>
 									
 									{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
