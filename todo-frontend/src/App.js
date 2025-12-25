@@ -127,9 +127,6 @@ function App(){
 	
 	//優先度を更新
 	const updatePriority = (id, newPriority) => {
-		
-		//プルダウンを即座に更新
-		setTodos(todos.map(todo => todo.id === id ? {...todo, priority: parseInt(newPriority)} : todo));
 		//todos配列から、指定idに合致するtodoがあるか探す
 		//見つかった場合はその要素、見つからなかった場合はundefinedが入る
 		const targetTodo = todos.find(todo => todo.id === id);
@@ -209,16 +206,31 @@ function App(){
 						{/* todosの要素を一つずつ取り出し、要素の数だけliを生成 */}
 						{todos
 							.slice() //sortは元の配列を並べ替えてしまうので、コピーを作成
-							//優先度が高い順（数字が小さい順）かつ未完了（done=false）が先に来るように並べ替え
+							//未完了が先（done=false）→締切日の近い順→優先度が高い順（数字が小さい順）で並べ替え
 							.sort((a, b) => {
-								//aとbでdoneが違う場合
+								//2. aとbでdoneが違う場合
 								if (a.done !== b.done){
 									//aがtrue（bがfalse）の場合は1を返し、bが先に来る
 									//aがfalse（bがtrue）の場合は-1を返し、aが先に来る
 									//つまり、done=false（未完了）の方が先に来る！
 									return a.done ? 1 : -1;
 								}
-								//aとbのdoneが同じ場合は優先度の数字順にする
+								//2. aとbの締切日を比較
+								//aとbの両方とも締切が設定されている場合
+								if (a.deadline && b.deadline){
+									if (a.deadline != b.deadline){
+										//aとbの締切日を比較し、近い方が先に来る
+										return a.deadline.localeCompare(b.deadline);
+									}
+								}
+								//aだけに締切がある場合はaが先に来る
+								else if (a.deadline && !b.deadline){
+									return -1;
+								//bだけに締切がある場合はbが先に来る
+								}else if (!a.deadline && b.deadline){
+									return 1;
+								}
+								//3. aとbのdoneが同じ場合は優先度の数字順にする
 								//引き算の結果がマイナス（aの方が数字が小さい）ならaが先に、
 								//結果がプラス（bの方が数字が小さい）ならbが先に来る
 								return a.priority - b.priority;
@@ -246,16 +258,10 @@ function App(){
 											textDecoration: todo.done ? "line-through" : "none",
 											//done=trueの場合は文字色を薄い灰色にする
 											color: todo.done ? "#aaa" : "#333",
-											fontSize: "16px", fontWeight: "500"
-	//										//done=trueの場合は文字を少し半透明にする
-	//										opacity: todo.done ? 0.6 : 1	
+											fontSize: "16px", fontWeight: "500"	
 										}}>
 										{todo.title}
 										</div>
-										{/* 締切日 */}
-										<span style = {{ fontSize: "0.8em", color: "#666", marginRight: "10px" }}>
-											{todo.deadline ? `(締切： ${todo.deadline}`: "（締切なし）"}
-										</span>
 										<span style={{fontSize:"12px"}}>優先度：</span>
 										<select
 											value={todo.priority}
@@ -275,6 +281,13 @@ function App(){
 											<option value ="2">中</option>
 											<option value ="3">低</option>
 										</select>
+										{/* 優先度と締切日の間に空白 */}
+										　
+										{/* 締切日 */}
+										<span style = {{ fontSize: "0.8em", color: "#666", marginRight: "10px" }}>
+											{todo.deadline ? `締切： ${todo.deadline}`: "締切なし"}
+											{}
+										</span>
 									</div>
 									
 									{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
