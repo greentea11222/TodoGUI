@@ -261,6 +261,46 @@ function App(){
 											fontSize: "16px", fontWeight: "500"	
 										}}>
 										{todo.title}
+										{todo.deadline ? (() => {
+											const today = new Date();
+											today.setHours(0,0,0,0); //時間を切り捨て、今日の0時0分にする
+											
+											const deadlineDate = new Date(todo.deadline);
+											deadlineDate.setHours(0,0,0,0); //締切日も0時0分にする
+											
+											//日数の差分を計算（ミリ秒を日にちに変換）
+											const diffTime = deadlineDate - today;
+											const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+										
+											let deadlineColor = "#666"; //デフォルトの色
+											let message = `締切： ${todo.deadline}`;
+											
+											if (diffDays < 0){
+												deadlineColor = "red"; //期限オーバーの場合は赤
+												message = `期限を過ぎています！ ${todo.deadline}`;
+											}else if (diffDays == 0){
+												deadlineColor = "orange"; //今日が締切
+												message = `今日が締切！ ${todo.deadline}`;
+											}else if (diffDays <= 3){
+												deadlineColor = "darkorange";
+												message = `あと${diffDays}日： ${todo.deadline}`;
+											}else {
+												message = `あと${diffDays}日： ${todo.deadline}`;
+											}
+											
+											return  (
+												<span style={{
+													fontSize: "0.8em", color: todo.done ? "#aaa": deadlineColor,
+													marginRight: "10px", fontWeight: diffDays <= 3 ? "bold" : "normal"
+												}}>
+													{message}
+												</span>
+											);
+										})() : (
+											<span style={{ fontSize: "0.8em", color: "#ccc", marginRight: "10px"}}>
+												（締切なし）
+											</span>
+										)}
 										</div>
 										<span style={{fontSize:"12px"}}>優先度：</span>
 										<select
@@ -281,13 +321,6 @@ function App(){
 											<option value ="2">中</option>
 											<option value ="3">低</option>
 										</select>
-										{/* 優先度と締切日の間に空白 */}
-										　
-										{/* 締切日 */}
-										<span style = {{ fontSize: "0.8em", color: "#666", marginRight: "10px" }}>
-											{todo.deadline ? `締切： ${todo.deadline}`: "締切なし"}
-											{}
-										</span>
 									</div>
 									
 									{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
