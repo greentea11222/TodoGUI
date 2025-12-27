@@ -2,6 +2,7 @@
 //useEffect：画面が初めて表示された時に一度だけ実行される処理
 //useState：データ保存のための道具
 import { useEffect, useState} from "react";
+import { motion, Reorder, AnimatePresence} from "framer-motion";
 
 function App(){
 	//todosというデータを、初期値は空の配列[]として作成。
@@ -11,20 +12,6 @@ function App(){
 	const [title, setTitle] = useState("");
 	//締切の日付を管理する
 	const [deadline, setDeadline] = useState("");
-	
-	//優先度を日本語にする
-	const getPriorityName = (priority) => {
-		switch (priority){
-			case 1:
-				return "高";
-			case 2:
-				return "中";
-			case 3:
-				return "低";
-			default:
-				return "未設定";
-		}
-	}
 	
 	//初回のみ実行
 	useEffect(() => {
@@ -151,23 +138,22 @@ function App(){
 		.catch(err => console.error("優先度更新失敗", err));
 	}
 	
-	//画面表示。todosの配列の中身を1つずつ<li>に変換
+	//画面表示。todosの配列の中身を1つずつ<li>内に入れる
 	return (
 		<div style={{
-			backgroundColor: "#f4f7f6", //薄いグレーの背景
+			background: "linear-gradient(135deg, #E6F8FF 0%, #B8E2FF 100%)", //背景をグラデーションに
 			minHeight: "100vh", 
 			padding: "40px 20px",
 			fontFamily: "'Helvetica Neue', Arial, sans-serif"
 		}}>
 			<div style={{
-				maxWidth: "500px",
-				margin: "0 auto",
-				backgroundColor: "#fff",
-				padding: "30px",
+				maxWidth: "500px", margin: "0 auto",
+				backgroundColor: "#fff", padding: "30px",
 				borderRadius: "12px", //角を丸くする
 				boxShadow: "0 10px 25px rgba(0,0,0,0.1)" //ふわっとした影
 			}}>
 			
+				{/* アプリのタイトル */}
 				<h1 style={{textAlign: "center", color: "#333", marginBottom: "30px"}}>
 					MyTodoList
 				</h1>
@@ -185,8 +171,9 @@ function App(){
 							border: "1px solid #ddd", fontSize: "16px", outline: "none"
 						}}
 					/>
-					{/* 締切日を追加 */}
+					{/* 締切日を選択 */}
 					<input 
+						style={{ fontSize: "14px"}}
 						type="date"
 						value={deadline}
 						onChange={(e) => setDeadline(e.target.value)}
@@ -196,146 +183,173 @@ function App(){
 						onClick={addTodo}
 						style={{
 							padding: "12px 20px", backgroundColor: "#007bff", color: "#fff",
-							border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold"
+							border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold", fontSize: "16px"
 						}}
 					>
 						追加
 					</button>
 				</div>
 					<ul style={{ listStyle: "none", padding: 0}}>
-						{/* todosの要素を一つずつ取り出し、要素の数だけliを生成 */}
-						{todos
-							.slice() //sortは元の配列を並べ替えてしまうので、コピーを作成
-							//未完了が先（done=false）→締切日の近い順→優先度が高い順（数字が小さい順）で並べ替え
-							.sort((a, b) => {
-								//2. aとbでdoneが違う場合
-								if (a.done !== b.done){
-									//aがtrue（bがfalse）の場合は1を返し、bが先に来る
-									//aがfalse（bがtrue）の場合は-1を返し、aが先に来る
-									//つまり、done=false（未完了）の方が先に来る！
-									return a.done ? 1 : -1;
-								}
-								//2. aとbの締切日を比較
-								//aとbの両方とも締切が設定されている場合
-								if (a.deadline && b.deadline){
-									if (a.deadline != b.deadline){
-										//aとbの締切日を比較し、近い方が先に来る
-										return a.deadline.localeCompare(b.deadline);
+						{/* AnimatePresence：要素の追加・削除・並べ替えを検知 */}
+						<AnimatePresence>
+							{todos
+								.slice() //sortは元の配列を並べ替えてしまうので、コピーを作成
+								//未完了が先（done=false）→締切日の近い順→優先度が高い順（数字が小さい順）で並べ替え
+								.sort((a, b) => {
+									//2. aとbでdoneが違う場合
+									if (a.done !== b.done){
+										//aがtrue（bがfalse）の場合は1を返し、bが先に来る
+										//aがfalse（bがtrue）の場合は-1を返し、aが先に来る
+										//つまり、done=false（未完了）の方が先に来る！
+										return a.done ? 1 : -1;
 									}
-								}
-								//aだけに締切がある場合はaが先に来る
-								else if (a.deadline && !b.deadline){
-									return -1;
-								//bだけに締切がある場合はbが先に来る
-								}else if (!a.deadline && b.deadline){
-									return 1;
-								}
-								//3. aとbのdoneが同じ場合は優先度の数字順にする
-								//引き算の結果がマイナス（aの方が数字が小さい）ならaが先に、
-								//結果がプラス（bの方が数字が小さい）ならbが先に来る
-								return a.priority - b.priority;
-							})
-							.map((todo) => (
-								<li 
-									key={todo.id}
-									style={{
-										display: "flex", alignItems: "center", gap: "15px",
-										padding: "15px 0",borderBottom: "1px solid #eee"
-									}}
-								>
-									<input
-										type="checkbox"
-										//Todoのdoneがtrueの場合はチェック、falseの場合はチェックを外す
-										checked={todo.done}
-										//チェックボックスの状態を変えると、idとtodo.doneの逆を引数として関数を実行。
-										onChange={() => toggleDone(todo.id, !todo.done)}
-										style={{ width: "20px", height: "20px", cursor: "pointer" }}
-									/>
-									
-									<div style={{ flex: 1 }}>
-										<div style={{
-											//done=trueの場合は打ち消し線を入れる
-											textDecoration: todo.done ? "line-through" : "none",
-											//done=trueの場合は文字色を薄い灰色にする
-											color: todo.done ? "#aaa" : "#333",
-											fontSize: "16px", fontWeight: "500"	
-										}}>
-										{todo.title}
-										{todo.deadline ? (() => {
-											const today = new Date();
-											today.setHours(0,0,0,0); //時間を切り捨て、今日の0時0分にする
-											
-											const deadlineDate = new Date(todo.deadline);
-											deadlineDate.setHours(0,0,0,0); //締切日も0時0分にする
-											
-											//日数の差分を計算（ミリ秒を日にちに変換）
-											const diffTime = deadlineDate - today;
-											const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-										
-											let deadlineColor = "#666"; //デフォルトの色
-											let message = `締切： ${todo.deadline}`;
-											
-											if (diffDays < 0){
-												deadlineColor = "red"; //期限オーバーの場合は赤
-												message = `期限を過ぎています！ ${todo.deadline}`;
-											}else if (diffDays == 0){
-												deadlineColor = "orange"; //今日が締切
-												message = `今日が締切！ ${todo.deadline}`;
-											}else if (diffDays <= 3){
-												deadlineColor = "darkorange";
-												message = `あと${diffDays}日： ${todo.deadline}`;
-											}else {
-												message = `あと${diffDays}日： ${todo.deadline}`;
-											}
-											
-											return  (
-												<span style={{
-													fontSize: "0.8em", color: todo.done ? "#aaa": deadlineColor,
-													marginRight: "10px", fontWeight: diffDays <= 3 ? "bold" : "normal"
-												}}>
-													{message}
-												</span>
-											);
-										})() : (
-											<span style={{ fontSize: "0.8em", color: "#ccc", marginRight: "10px"}}>
-												（締切なし）
-											</span>
-										)}
-										</div>
-										<span style={{fontSize:"12px"}}>優先度：</span>
-										<select
-											value={todo.priority}
-											onChange={(e) => updatePriority(todo.id, e.target.value)} 
-											style={{
-											fontSize: "12px", padding: "2px 4px", borderRadius: "4px",
-											border: "1px solid #ddd",
-											color: todo.priority == 1 ? "#e74c3c" : //高 ＝ 赤
-													todo.priority == 2 ? "#f39c12": //中 = オレンジ
-													"#27ae60",						//低 = 緑
-											backgroundColor: todo.priority == 1 ? "#fdecea" :
-															todo.priority == 2 ? "#fef5e7" :
-															"#eafaf1",
-											fontWeight: "bold", cursor: "pointer"
-										}}>
-											<option value ="1">高</option>
-											<option value ="2">中</option>
-											<option value ="3">低</option>
-										</select>
-									</div>
-									
-									{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
-									<button
-										onClick={() => deleteTodo(todo.id)}
+									//2. aとbの締切日を比較
+									//aとbの両方とも締切が設定されている場合
+									if (a.deadline && b.deadline){
+										if (a.deadline != b.deadline){
+											//aとbの締切日を比較し、近い方が先に来る
+											return a.deadline.localeCompare(b.deadline);
+										}
+									}
+									//aだけに締切がある場合はaが先に来る
+									else if (a.deadline && !b.deadline){
+										return -1;
+									//bだけに締切がある場合はbが先に来る
+									}else if (!a.deadline && b.deadline){
+										return 1;
+									}
+									//3. aとbのdoneが同じ場合は優先度の数字順にする
+									//引き算の結果がマイナス（aの方が数字が小さい）ならaが先に、
+									//結果がプラス（bの方が数字が小さい）ならbが先に来る
+									return a.priority - b.priority;
+								})
+								//todosの要素を一つずつ取り出し、要素の数だけliを生成
+								.map((todo) => (
+									<motion.li //動きを付けない場合は普通のliでOK
+										key={todo.id}
+										layout //並べかをアニメーション化
+										//opacity：透明度、y：縦軸
+										initial={{ opacity: 0, y: 10 }} //Todo追加時の動き。透明の状態で下から現れる
+										animate={{ opacity: 1, y: 0 }} //表示中の状態
+										exit={{ opacity: 0, scale: 0.9 }} //Todo削除時の動き。きゅっと縮んで透明になる
+										transition={{ type: "spring", stiffness: 300, damping: 30 }} //バネのような動き
 										style={{
-											backgroundColor: "transparent", border: "1px solid #ff4d4f",
-											color: "#ff4d4f", padding: "5px 10px", borderRadius: "6px",
-											cursor: "pointer", fontSize: "12px"
+											display: "flex", alignItems: "center", gap: "15px",
+											padding: "15px 0",borderBottom: "1px solid #eee",
+											backgroundColor: "#fff" //アニメーション中に重なりが見えないように背景色を設定
 										}}
 									>
-										削除
-									</button>
-								</li>
-						))}
+										{/* 完了済／未完了を変えるチェックボックス */}
+										<input
+											type="checkbox"
+											//Todoのdoneがtrueの場合はチェック、falseの場合はチェックを外す
+											checked={todo.done}
+											//チェックボックスの状態を変えると、idとtodo.doneの逆を引数として関数を実行。
+											onChange={() => toggleDone(todo.id, !todo.done)}
+											style={{ width: "20px", height: "20px", cursor: "pointer" }}
+										/>
+										
+										<div style={{ flex: 1 }}>
+											{/* Todo名 */}
+											<div style={{
+												//done=trueの場合は打ち消し線を入れる
+												textDecoration: todo.done ? "line-through" : "none",
+												//done=trueの場合は文字色を薄い灰色にする
+												color: todo.done ? "#aaa" : "#333",
+												fontSize: "16px", fontWeight: "500"	
+											}}>
+											{todo.title}　
+											</div>
+											{/* 優先度 */}
+											<span style={{fontSize:"12px"}}>優先度：</span>
+											<select
+												value={todo.priority}
+												onChange={(e) => updatePriority(todo.id, e.target.value)} 
+												style={{
+												fontSize: "12px", padding: "2px 4px", borderRadius: "4px",
+												border: "1px solid #ddd",
+												color: todo.priority == 1 ? "#e74c3c" : //高 ＝ 赤
+														todo.priority == 2 ? "#f39c12": //中 = オレンジ
+														"#27ae60",						//低 = 緑
+												backgroundColor: todo.priority == 1 ? "#fdecea" :
+																todo.priority == 2 ? "#fef5e7" :
+																"#eafaf1",
+												fontWeight: "bold", cursor: "pointer"
+											}}>
+												<option value ="1">高</option>
+												<option value ="2">中</option>
+												<option value ="3">低</option>
+											</select>
+											{/*　優先度と締切日の間に空白 */}
+											　
+											{/* 締切日 */}
+											{/* deadlineが入っている場合は関数を実行
+												※(() => {...})()は即時実行関数。{...}の関数を作って、その場で実行する */}
+											{todo.deadline ? (() => {
+												//現在の時刻を取得し、時間部分を0時0分にする
+												const today = new Date();
+												today.setHours(0,0,0,0); 
+												
+												//締切日の時刻も0時0分にする
+												const deadlineDate = new Date(todo.deadline);
+												deadlineDate.setHours(0,0,0,0); 
+												
+												//日数の差分を計算（結果はミリ秒で出力）
+												const diffTime = deadlineDate - today;
+												//ミリ秒を日に換算し、切り上げる
+												const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+												
+												//締切の表示色とメッセージを入れる変数を宣言
+												//constは定数、letは変数を宣言
+												let deadlineColor = "#666"; //デフォルトの色
+												let message = `締切： ${todo.deadline}`;
+												
+												//締切日が過ぎているか／今日か／あと3日以内か／それ以外かで表示を分ける
+												if (diffDays < 0){
+													deadlineColor = "red"; //期限オーバーの場合は赤
+													message = `締切日：${todo.deadline}（期限を過ぎています！）`;
+												}else if (diffDays == 0){
+													deadlineColor = "orange"; //今日が締切
+													message = `締切日：${todo.deadline}（今日が締切！）`;
+												}else if (diffDays <= 3){
+													deadlineColor = "darkorange";
+													message = `締切日：${todo.deadline}（あと${diffDays}日）`;
+												}else {
+													message = `締切日：${todo.deadline}（あと${diffDays}日）`;
+												}
+												
+												//決めた色とメッセージを使って表示
+												return  (
+													<span style={{
+														fontSize: "0.8em", color: todo.done ? "#aaa": deadlineColor,
+														marginRight: "10px", fontWeight: diffDays <= 3 ? "bold" : "normal"
+													}}>
+														{message}
+													</span>
+												);
+											//deadlineが入っていなければ「締切なし」の表示
+											})() : (
+												<span style={{ fontSize: "0.8em", color: "#ccc", marginRight: "10px"}}>
+													（締切なし）
+												</span>
+										)}
+										</div>
+										
+										{/* 削除ボタン */}
+										{/* onClick={delete(todo.id)}にすると、画面表示してすぐに実行してしまうのでNG */}
+										<button
+											onClick={() => deleteTodo(todo.id)}
+											style={{
+												backgroundColor: "transparent", border: "1px solid #ff4d4f",
+												color: "#ff4d4f", padding: "5px 10px", borderRadius: "6px",
+												cursor: "pointer", fontSize: "12px"
+											}}
+										>
+											削除
+										</button>
+									</motion.li>
+							))}
+						</AnimatePresence>
 					</ul>
 					
 					{/* 進捗表示 */}
