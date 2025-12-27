@@ -258,7 +258,7 @@ function App(){
 												color: todo.done ? "#aaa" : "#333",
 												fontSize: "16px", fontWeight: "500"	
 											}}>
-											{todo.title}　
+											{todo.title}
 											</div>
 											{/* 優先度 */}
 											<span style={{fontSize:"12px"}}>優先度：</span>
